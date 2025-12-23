@@ -894,7 +894,7 @@ void TCL_DoDiscovery(const char *topic) {
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
 
-	dev_info = hass_createSelectEntityGen("Generator", "~/Gen/get", sizeof(genMode_e), "Generator");
+	dev_info = hass_createSelectEntityGen("Generator", "~/Gen/get", sizeof(genOptions), genOptions, "Generator");
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
 
