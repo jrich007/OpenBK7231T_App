@@ -121,6 +121,38 @@ void build_set_cmd(get_cmd_resp_t * get_cmd_resp) {
 
 	for (int i = 0; i < sizeof(m_set_cmd.raw) - 1; i++) m_set_cmd.raw[sizeof(m_set_cmd.raw) - 1] ^= m_set_cmd.raw[i];
 }
+
+//gen stuff 
+typedef enum {
+	GEN_MODE_OFF,
+	GEN_MODE_1,
+	GEN_MODE_2,
+	GEN_MODE_3,
+} genMode_e;
+
+static const struct {
+	const char *name;
+	genMode_e mode;
+} genModeMap[] = {
+	{"off", GEN_MODE_OFF},
+	{"1", GEN_MODE_1},
+	{"2", GEN_MODE_2},
+	{"3", GEN_MODE_3},
+};
+
+const char *genOptions[] = { "off", "1", "2", "3"};
+
+const char *genModeToStr(genMode_e mode) {
+	for (int i = 0; i < sizeof(genModeMap) / sizeof(genModeMap[0]); ++i) {
+		if (genModeMap[i].mode == mode) {
+			return genModeMap[i].name;
+		}
+	}
+	return NULL;
+}
+
+//end gen stuff
+
 typedef enum {
 	FAN_OFF,
 	FAN_1, // 1
@@ -274,16 +306,31 @@ void OBK_SetFanMode(fanMode_e fan_mode) {
 	ready_to_send_set_cmd_flag = true;
 
 }
-void OBK_SetGen(int gen) {
+// void OBK_SetGen(int gen) {
+
+// 	get_cmd_resp_t get_cmd_resp = { 0 };
+// 	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
+
+// 	g_gen = gen;
+
+// 	build_set_cmd(&get_cmd_resp);
+// 	ready_to_send_set_cmd_flag = true;
+// }
+
+void OBK_SetGen(genMode_e gen_mode) {
 
 	get_cmd_resp_t get_cmd_resp = { 0 };
 	memcpy(get_cmd_resp.raw, m_get_cmd_resp.raw, sizeof(get_cmd_resp.raw));
 
-	g_gen = gen;
+	if (gen_mode = GEN_MODE_OFF) g_gen = 0x00;
+	else if (gen_mode = GEN_MODE_1) g_gen = 0x01;
+	else if (gen_mode = GEN_MODE_2) g_gen = 0x02;
+	else if (gen_mode = GEN_MODE_3) g_gen = 0x03;
 
 	build_set_cmd(&get_cmd_resp);
 	ready_to_send_set_cmd_flag = true;
 }
+
 void OBK_SetBuzzer(int buzzer) {
 
 	get_cmd_resp_t get_cmd_resp = { 0 };
@@ -808,6 +855,7 @@ void TCL_UART_RunEverySecond(void) {
 	MQTT_PublishMain_StringString("FANMode", fanModeToStr(g_fanMode), 0);
 	MQTT_PublishMain_StringInt("Buzzer", g_buzzer, 0);
 	MQTT_PublishMain_StringInt("Display", g_disp, 0);
+	MQTT_PublishMain_StringString("Gen", genModeToStr(g_gen), 0);
 	MQTT_PublishMain_StringString("SwingH", getSwingHLabel(g_swingH), 0);
 	MQTT_PublishMain_StringString("SwingV", getSwingVLabel(g_swingV), 0);
 
@@ -845,6 +893,11 @@ void TCL_DoDiscovery(const char *topic) {
 	dev_info = hass_createToggle("Display", "~/Display/get", "Display");
 	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
 	hass_free_device_info(dev_info);
+
+	dev_info = hass_createSelectEntityGen("Generator", "~/Gen/get", sizeof(genMode_e), "Generator");
+	MQTT_QueuePublish(topic, dev_info->channel, hass_build_discovery_json(dev_info), OBK_PUBLISH_FLAG_RETAIN);
+	hass_free_device_info(dev_info);
+
 
 
 		//char command_topic[64];

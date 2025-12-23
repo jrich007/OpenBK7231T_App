@@ -147,6 +147,8 @@ HassDeviceInfo* hass_createFanWithModes(const char *label, const char *stateTopi
 	const char *command, const char **options, int numOptions);
 HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title);
+HassDeviceInfo* hass_createSelectEntityGen(const char* state_topic, const char* command_topic, int numoptions,
+const char* options[], const char* title);
 HassDeviceInfo* hass_createSelectEntityIndexed(const char* state_topic, const char* command_topic, int numoptions,
 	const char* options[], const char* title);
 HassDeviceInfo* hass_createSelectEntityIndexedCustom(const char* state_topic, const char* command_topic, int numoptions,

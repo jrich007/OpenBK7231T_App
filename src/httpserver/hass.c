@@ -304,6 +304,40 @@ HassDeviceInfo* hass_createSelectEntity(const char* state_topic, const char* com
 
 	return info;
 }
+
+HassDeviceInfo* hass_createSelectEntityGen(const char* state_topic, const char* command_topic, int numoptions,
+	const char* options[], const char* title) {
+	// Initialize device info for a single select entity
+	HassDeviceInfo* info = hass_init_device_info(HASS_SELECT, 0, NULL, NULL, 0, title);
+
+	// Set entity properties
+	cJSON_AddStringToObject(info->root, "name", title);
+	cJSON_AddStringToObject(info->root, "unique_id", title); // Using title as unique_id for simplicity; adjust if needed
+	cJSON_AddStringToObject(info->root, "state_topic", state_topic);
+	cJSON_AddStringToObject(info->root, "command_topic", command_topic);
+
+	// Create options array from provided options
+	cJSON* select_options = cJSON_CreateArray();
+	for (int i = 0; i < numoptions; i++) {
+		cJSON_AddItemToArray(select_options, cJSON_CreateString(options[i]));
+	}
+	cJSON_AddItemToObject(info->root, "options", select_options);
+
+	// Set availability
+	cJSON_AddStringToObject(info->root, "availability_topic", "~/status");
+	cJSON_AddStringToObject(info->root, "payload_available", "online");
+	cJSON_AddStringToObject(info->root, "payload_not_available", "offline");
+
+	// Set configuration channel for select entity
+	sprintf(info->channel, "select/%s/config", info->unique_id);
+
+	// Update device info
+	cJSON* dev = info->device;
+	cJSON_ReplaceItemInObject(dev, "manufacturer", cJSON_CreateString("Custom"));
+	cJSON_ReplaceItemInObject(dev, "model", cJSON_CreateString("Generator Options"));
+
+	return info;
+}
 // Helper function to generate a dictionary string for value_template mapping integers to strings
 static void generate_value_template(int numoptions, const char* options[], char* buffer, size_t bufsize) {
 	size_t len = 0;
